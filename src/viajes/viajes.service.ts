@@ -1,32 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service'; // 👈 Importamos PrismaService para acceder a la base de datos
+import { PrismaService } from '../../prisma/prisma.service'; // ✅ Servicio Prisma para interactuar con la base de datos
 
 @Injectable()
-// 🚀 Servicio para manejar la lógica de negocios de los viajes
+// 🚀 Servicio que contiene la lógica de negocio para los viajes
 export class ViajesService {
-  constructor(private prisma: PrismaService) {} // 🛠 Inyectamos PrismaService para interactuar con la BD
+  constructor(private prisma: PrismaService) {} // 🛠 Inyectamos PrismaService para consultas a la BD
 
   /**
    * 🔍 Método para buscar viajes según origen, destino y fecha
    * @param origen - Ciudad de origen
    * @param destino - Ciudad de destino
-   * @param fecha - Fecha del viaje (string en formato ISO: YYYY-MM-DD)
+   * @param fecha - Fecha del viaje como objeto Date
    * @returns Lista de viajes que coincidan con los filtros
    */
-  async buscarViajes(origen: string, destino: string, fecha: string) {
-    const fechaDate = new Date(fecha); // 📅 Convertimos fecha string a Date
-
+  async buscarViajes(origen: string, destino: string, fecha: Date) {
     return this.prisma.viaje.findMany({
       where: {
-        fecha: fechaDate, // ✅ Prisma filtra por fecha exacta
+        fecha: fecha, // ✅ Filtramos por fecha exacta usando objeto Date
         ruta: {
-          origen: origen,   // 🌍 Filtramos por ciudad de origen
-          destino: destino, // 🌍 Filtramos por ciudad de destino
+          origen: origen,   // 🌍 Ciudad de origen
+          destino: destino, // 🌍 Ciudad de destino
         },
       },
       include: {
-        ruta: true, // 👀 Incluimos datos de la ruta asociada
-        bus: true,  // 👀 Incluimos datos del bus asignado
+        ruta: true, // 📦 Incluimos detalles de la ruta asociada
+        bus: true,  // 🚌 Incluimos detalles del bus asignado
       },
     });
   }
@@ -39,16 +37,13 @@ export class ViajesService {
   async crearViaje(data: {
     idRuta: number;       // 🔗 ID de la ruta asociada
     idBus: number;        // 🔗 ID del bus asignado
-    fecha: string;        // 📅 Fecha en formato string (ISO)
+    fecha: Date;          // 📅 Fecha ya como objeto Date
     horaSalida: string;   // ⏰ Hora de salida
     horaLlegada: string;  // ⏰ Hora de llegada
   }) {
-    const fechaDate = new Date(data.fecha); // 🛠 Convertimos string a Date para Prisma
-
     return this.prisma.viaje.create({
       data: {
-        ...data,
-        fecha: fechaDate, // ✅ Prisma recibe un objeto Date válido
+        ...data, // 📦 Spread de los datos recibidos
       },
     });
   }
