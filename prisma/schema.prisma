@@ -1,0 +1,34 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 👇 Modelo para la tabla Rutas
+model Ruta {
+  id                 Int      @id @default(autoincrement()) // Primary Key
+  origen             String                                  // Ciudad de origen
+  destino            String                                  // Ciudad de destino
+  distanciaKm        Float                                   // Distancia en kilómetros
+  duracionEstimada   Int                                     // Duración en minutos
+  estado             Boolean  @default(true)                 // Activo o inactivo
+
+  viajes             Viaje[]                                 // Relación con viajes
+
+  @@map("rutas") // Nombre real de la tabla en la DB
+}
+
+// 🔥 Modelo vacío para viajes (lo completaremos luego)
+model Viaje {
+  id        Int    @id @default(autoincrement())
+  idRuta    Int
+  // ...campos que completaremos más adelante
+
+  ruta      Ruta   @relation(fields: [idRuta], references: [id])
+}
