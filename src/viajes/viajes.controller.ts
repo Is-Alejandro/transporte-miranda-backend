@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, BadRequestException } from '@nestjs/common';
 import { ViajesService } from './viajes.service';
 import { CrearViajeDto } from './dto/crear-viaje/crear-viaje.dto'; // ✅ Importamos DTO
 
@@ -39,5 +39,27 @@ export class ViajesController {
     };
 
     return this.viajesService.crearViaje(viajeConFechaDate);
+  }
+
+  /**
+   * 🔒 POST /viajes/reservar
+   * Permite reservar un asiento para un viaje
+   */
+  @Post('reservar')
+  async reservarAsiento(@Body() body: { idViaje: number; idAsiento: number }) {
+    return this.viajesService.reservarAsiento(body.idViaje, body.idAsiento);
+  }
+
+  /**
+   * 🪑 GET /viajes/:id/asientos
+   * Devuelve todos los asientos para un viaje específico
+   */
+  @Get(':id/asientos')
+  async getAsientosPorViaje(@Param('id') id: string) {
+    const idViaje = parseInt(id, 10);
+    if (isNaN(idViaje)) {
+      throw new BadRequestException('El ID del viaje debe ser un número válido.');
+    }
+    return this.viajesService.obtenerAsientosPorViaje(idViaje);
   }
 }

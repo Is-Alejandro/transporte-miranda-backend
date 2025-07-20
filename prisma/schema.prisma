@@ -1,82 +1,91 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 // 👇 Prisma Client Generator
 generator client {
-  provider = "prisma-client-js" // Cliente para usar Prisma en Node/NestJS
+  provider = "prisma-client-js"
 }
 
 // 👇 Conexión a la base de datos PostgreSQL
 datasource db {
-  provider = "postgresql"       // Especifica el motor de base de datos
-  url      = env("DATABASE_URL") // Obtiene la URL de conexión desde .env
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 //
 // ======================================
-// 📦 Modelo para la tabla Rutas
+// 📦 Modelo para la tabla Ruta
 // ======================================
 model Ruta {
-  id                 Int      @id @default(autoincrement()) // Primary Key autoincremental
-  origen             String                                  // Ciudad de origen
-  destino            String                                  // Ciudad de destino
-  distanciaKm        Float                                   // Distancia en kilómetros
-  duracionEstimada   Int                                     // Duración en minutos
-  estado             Boolean  @default(true)                 // Estado activo/inactivo
+  id                 Int      @id @default(autoincrement())
+  origen             String
+  destino            String
+  distanciaKm        Float
+  duracionEstimada   Int
+  estado             Boolean  @default(true)
 
-  viajes             Viaje[]                                 // Relación: una Ruta tiene muchos Viajes
-
-  @@map("rutas") // 🔗 Nombre real de la tabla en PostgreSQL
+  viajes             Viaje[] // Relación: una Ruta tiene muchos Viajes
 }
 
 //
 // ======================================
-// 📦 Modelo para la tabla Buses
+// 📦 Modelo para la tabla Bus
 // ======================================
 model Bus {
-  id              Int      @id @default(autoincrement())     // Primary Key autoincremental
-  placa           String   @unique                          // Placa única del bus
-  marca           String                                       // Marca (Ej: Volvo, Mercedes)
-  modelo          String                                       // Modelo (Ej: Paradiso 1200)
-  tipoBus         String                                       // Tipo (Ej: Interprovincial, Minivan)
-  añoFabricacion  Int                                          // Año de fabricación
-  capacidadTotal  Int                                          // Número de asientos
-  estadoOperativo Boolean  @default(true)                      // Estado operativo (activo/inactivo)
+  id              Int      @id @default(autoincrement())
+  placa           String   @unique
+  marca           String
+  modelo          String
+  tipoBus         String
+  añoFabricacion  Int
+  capacidadTotal  Int
+  estadoOperativo Boolean  @default(true)
 
-  viajes          Viaje[]                                      // Relación: un Bus tiene muchos Viajes
-  asientos        Asiento[]                                    // Relación: un Bus tiene muchos Asientos
-
-  @@map("buses") // 🔗 Nombre real de la tabla en PostgreSQL
+  viajes          Viaje[]      // Relación: un Bus tiene muchos Viajes
+  asientos        Asiento[]    // Relación: un Bus tiene muchos Asientos
 }
 
 //
 // ======================================
-// 📦 Modelo para la tabla Viajes
+// 📦 Modelo para la tabla Viaje
 // ======================================
 model Viaje {
-  id          Int      @id @default(autoincrement())         // Primary Key autoincremental
-  idRuta      Int                                          // FK a la tabla Rutas
-  idBus       Int                                          // FK a la tabla Buses
-  fecha       DateTime                                     // Fecha del viaje
-  horaSalida  String                                       // Hora de salida
-  horaLlegada String                                       // Hora de llegada
+  id          Int             @id @default(autoincrement())
+  idRuta      Int
+  idBus       Int
+  fecha       DateTime
+  horaSalida  String
+  horaLlegada String
 
-  ruta        Ruta     @relation(fields: [idRuta], references: [id]) // Relación con Rutas
-  bus         Bus      @relation(fields: [idBus], references: [id])  // Relación con Buses
+  ruta        Ruta            @relation(fields: [idRuta], references: [id])
+  bus         Bus             @relation(fields: [idBus], references: [id])
 
-  @@map("viajes") // 🔗 Nombre real de la tabla en PostgreSQL
+  // 🔥 Relación inversa con ViajeAsiento
+  asientosViaje ViajeAsiento[]
 }
 
 //
 // ======================================
-// 📦 Modelo para la tabla Asientos
+// 📦 Modelo para la tabla Asiento
 // ======================================
 model Asiento {
-  id        Int    @id @default(autoincrement())            // Primary Key autoincremental
-  idBus     Int                                            // FK a la tabla Buses
-  numero    Int                                            // Número de asiento
+  id        Int             @id @default(autoincrement())
+  idBus     Int
+  numero    Int
 
-  bus       Bus    @relation(fields: [idBus], references: [id]) // Relación con Buses
+  bus       Bus             @relation(fields: [idBus], references: [id])
 
-  @@map("asientos") // 🔗 Nombre real de la tabla en PostgreSQL
+  // 🔥 Relación inversa con ViajeAsiento
+  viajesAsiento ViajeAsiento[]
+}
+
+//
+// ======================================
+// 📦 Modelo para la tabla ViajeAsiento
+// ======================================
+model ViajeAsiento {
+  id        Int      @id @default(autoincrement())
+  idViaje   Int
+  idAsiento Int
+  estado    String   @default("disponible") // disponible | reservado | ocupado
+
+  viaje     Viaje    @relation(fields: [idViaje], references: [id])
+  asiento   Asiento  @relation(fields: [idAsiento], references: [id])
 }
